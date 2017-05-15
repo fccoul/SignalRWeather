@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="../Scripts/jquery-1.6.4.min.js"></script>
+    <script src="../Scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script src="/signalr/hubs"></script>
+    <script>
+        var SignalrConnection;
+        var ChatProxy;
+
+        function Connect() {
+            ChatServerUrl = "http://localhost:9447/";
+            var ChatUrl = ChatServerUrl + "signalr";
+
+            SignalrConnection = $.hubConnection(ChatUrl, {
+                useDefaultPath:false
+            });
+
+            ChatProxy = SignalrConnection.createHubProxy('ChatHub');//ChatHub : notre classe créée
+
+            //this is called by signalr coté server
+            ChatProxy.on("NotifyUser", function (temperature) {
+                $('span').text(temperature);
+            });
+
+            //conncetion du client au hub signalR
+            SignalrConnection.start().done(function () {
+                GetWeather();
+                alert("Connected to Signalr Server");
+            })
+            .fail(function () {
+                alert("failed in connecting to the signalr Server");
+            })
+        }
+
+        function GetWeather() {
+            //calling the GetWeather function on the signalr server  
+            ChatProxy.invoke('get_weather');
+        }
+
+    </script>
+</head>
+<body onload="Connect();">
+    <div style="text-align:center">
+        Temperature :<span></span>  °C
+    </div>
+</body>
+</html>
